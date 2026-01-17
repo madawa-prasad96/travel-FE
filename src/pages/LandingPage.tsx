@@ -4,9 +4,13 @@ import { Map, ArrowRight, Star, Shield, Clock, ChevronLeft, ChevronRight } from 
 import { cn } from '../utils/cn';
 
 const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2021&q=80",
-  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-  "https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1964&q=80"
+ // Import from public folder
+ "/hero1.webp",
+ "/hero2.webp",
+ "/hero3.webp",
+ "/hero4.webp",
+ "/hero5.webp",
+ "/hero6.webp",
 ];
 
 const TESTIMONIALS = [
