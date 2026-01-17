@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    @apply antialiased text-gray-900;
+  }
+}
+
+.animate-in {
+    animation-duration: 500ms;
+    animation-fill-mode: both;
+}
+
+.fade-in {
+    animation-name: fadeIn;
+}
+
+.slide-in-from-bottom-2 {
+    --tw-enter-translate-y: 0.5rem;
+    animation-name: slideInFromBottom;
+}
+
+.slide-in-from-bottom-4 {
+    --tw-enter-translate-y: 1rem;
+    animation-name: slideInFromBottom;
+}
+
+.slide-in-from-bottom-10 {
+  --tw-enter-translate-y: 2.5rem;
+  animation-name: slideInFromBottom;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+    from { transform: translateY(var(--tw-enter-translate-y)); }
+    to { transform: translateY(0); }
+}
