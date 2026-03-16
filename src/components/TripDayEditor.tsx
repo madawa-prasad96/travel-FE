@@ -24,7 +24,7 @@ const SortableStopItem = ({ stop, onEdit, onDelete }: { stop: Stop; onEdit: () =
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all group">
+    <div ref={setNodeRef} style={style} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all group">
          <div className="flex items-center gap-3">
              <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500">
                 <GripIcon className="w-5 h-5" />
@@ -182,7 +182,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                  {isFirstDay ? (
                    <button 
                      onClick={() => openPicker('START')}
-                     className="w-full text-left p-3 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                     className="w-full text-left p-4 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
                    >
                      {day.startLocation ? (
                        <span className="font-medium text-gray-900">{day.startLocation.name}</span>
@@ -191,7 +191,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                      )}
                    </button>
                  ) : (
-                   <div className="p-3 rounded-lg border bg-gray-50 text-gray-600">
+                   <div className="p-4 rounded-lg border bg-gray-50 text-gray-600">
                       {displayStartLocation?.name || "Previous Day End"}
                    </div>
                  )}
@@ -246,7 +246,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                  <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Destination</label>
                  <button 
                      onClick={() => openPicker('END')}
-                     className="w-full text-left p-3 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                     className="w-full text-left p-4 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
                    >
                      {day.endLocation ? (
                        <span className="font-medium text-gray-900">{day.endLocation.name}</span>
