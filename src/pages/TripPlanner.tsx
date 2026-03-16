@@ -78,7 +78,7 @@ export const TripPlanner = () => {
       trip.days.forEach((day, index) => {
           const points: MappedPoint[] = [];
           const isFirstDay = index === 0;
-          const isLastDay = index === trip.days.length - 1;
+
 
           if (day.startLocation) {
               points.push({ 

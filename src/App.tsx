@@ -3,6 +3,8 @@ import { GoogleMapsProvider } from './context/GoogleMapsContext';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
 import { TripPlanner } from './pages/TripPlanner';
+import { AboutPage } from './pages/AboutPage';
+import { ContactPage } from './pages/ContactPage';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
              <Routes>
                <Route path="/" element={<LandingPage />} />
                <Route path="/plan" element={<TripPlanner />} />
+               <Route path="/about" element={<AboutPage />} />
+               <Route path="/contact" element={<ContactPage />} />
                <Route path="*" element={<Navigate to="/" replace />} />
              </Routes>
            </div>
