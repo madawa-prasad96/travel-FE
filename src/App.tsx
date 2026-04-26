@@ -7,6 +7,7 @@ import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { ReserveVehiclePage } from './pages/ReserveVehiclePage';
 import { GalleryPage } from './pages/GalleryPage';
+import { Footer } from './components/Footer';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                <Route path="*" element={<Navigate to="/" replace />} />
              </Routes>
            </div>
+           <Footer />
         </div>
       </Router>
     </GoogleMapsProvider>
