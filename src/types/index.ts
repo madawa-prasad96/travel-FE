@@ -19,6 +19,7 @@ export interface Day {
   polyline?: string; // Encoded polyline for the day's route
   distance?: number; // Estimated distance in km
   cost?: number; // Estimated cost in USD
+  date?: string; // Calculated date for this day
 }
 
 export interface Trip {
