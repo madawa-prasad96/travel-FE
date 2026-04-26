@@ -129,45 +129,46 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
       {/* Header */}
       <div className="bg-gray-50 md:px-6 px-4 py-3 md:py-4 border-b border-gray-100">
         <div className="flex items-center justify-between gap-3">
-          {/* Left: Day & Date */}
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className={cn(
-                  "p-1.5 md:p-2 rounded-lg shrink-0",
-                  day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
-              )}>
-                {day.type === 'TRAVEL' ? <Navigation className="w-4 h-4 md:w-5 md:h-5" /> : <Coffee className="w-4 h-4 md:w-5 md:h-5" />}
-              </div>
-              <h3 className="text-base md:text-lg font-bold text-gray-800 whitespace-nowrap">Day {day.dayNo}</h3>
-            </div>
-            
-            {isFirstDay && onTripStartDateChange ? (
-              <div className="bg-amber-50 text-amber-700 px-2 md:px-4 py-0.5 md:py-1.5 rounded md:rounded-xl text-[10px] md:text-sm font-bold border border-amber-200 flex items-center gap-1.5 shadow-sm w-fit">
-                <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-amber-500" />
-                <input
-                  type="date"
-                  value={tripStartDate || ''}
-                  onChange={(e) => onTripStartDateChange(e.target.value)}
-                  className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold w-20 md:w-auto"
-                />
-              </div>
-            ) : (
-              currentDayDate && (
-                <div className="bg-white text-gray-700 px-2 md:px-4 py-0.5 md:py-1.5 rounded md:rounded-xl text-[10px] md:text-sm font-bold border border-gray-200 flex items-center gap-1.5 shadow-sm w-fit">
-                  <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-amber-500" />
-                  {format(currentDayDate, 'dd MMM yyyy')}
+          {/* Left: Day, Date & Web Toggle */}
+          <div className="flex flex-col gap-2 md:gap-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className={cn(
+                    "p-1.5 md:p-2 rounded-lg shrink-0",
+                    day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+                )}>
+                  {day.type === 'TRAVEL' ? <Navigation className="w-4 h-4 md:w-5 md:h-5" /> : <Coffee className="w-4 h-4 md:w-5 md:h-5" />}
                 </div>
-              )
-            )}
-          </div>
+                <h3 className="text-base md:text-lg font-bold text-gray-800 whitespace-nowrap">Day {day.dayNo}</h3>
+              </div>
+              
+              {isFirstDay && onTripStartDateChange ? (
+                <div className="md:hidden bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200 flex items-center gap-1.5 shadow-sm w-fit">
+                  <CalendarIcon className="w-3 h-3 text-amber-500" />
+                  <input
+                    type="date"
+                    value={tripStartDate || ''}
+                    min={format(new Date(), 'yyyy-MM-dd')}
+                    onChange={(e) => onTripStartDateChange(e.target.value)}
+                    className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold w-20"
+                  />
+                </div>
+              ) : (
+                currentDayDate && (
+                  <div className="md:hidden bg-white text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-200 flex items-center gap-1.5 shadow-sm w-fit">
+                    <CalendarIcon className="w-3 h-3 text-amber-500" />
+                    {format(currentDayDate, 'dd MMM yyyy')}
+                  </div>
+                )
+              )}
+            </div>
 
-          {/* Right: Toggle & Delete */}
-          <div className="flex flex-col items-end gap-1.5 md:gap-2 shrink-0">
-            <div className="flex bg-white rounded-lg p-0.5 md:p-1 border border-gray-200 shadow-sm">
+            {/* Desktop-only Toggle (Under Day #) */}
+            <div className="hidden md:flex bg-white rounded-lg p-0.5 border border-gray-200 shadow-sm w-fit">
               <button
                 onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
                 className={cn(
-                  "px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-medium rounded-md transition-colors",
+                  "px-3 py-1 text-xs font-bold rounded-md transition-all",
                   day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
                 )}
               >
@@ -177,25 +178,92 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                 onClick={() => onUpdate({ ...day, type: 'STAY' })}
                 disabled={isFirstDay}
                 className={cn(
-                  "px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-medium rounded-md transition-colors",
+                  "px-3 py-1 text-xs font-bold rounded-md transition-all",
                   day.type === 'STAY' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700",
-                  isFirstDay && "opacity-50 cursor-not-allowed grayscale"
+                  isFirstDay && "opacity-40 cursor-not-allowed"
                 )}
                 title={isFirstDay ? "Day 1 must be a Travel day" : ""}
               >
                 Stay
               </button>
             </div>
-            {!isFirstDay && (
-              <button 
-                onClick={onRemove}
-                className="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 px-1.5 py-0.5 hover:bg-red-50 rounded-md"
-                title="Remove Day"
-              >
-                <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">Delete</span>
-              </button>
-            )}
+          </div>
+
+          {/* Right: Toggle & Actions */}
+          <div className="flex items-center gap-3 md:gap-4 shrink-0">
+            {/* Mobile-only Travel/Stay Toggle */}
+            <div className="md:hidden flex flex-col items-end gap-1.5 shrink-0">
+              <div className="flex bg-white rounded-lg p-0.5 border border-gray-200 shadow-sm">
+                <button
+                  onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
+                  className={cn(
+                    "px-2 py-0.5 text-xs font-medium rounded-md transition-colors",
+                    day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  Travel
+                </button>
+                <button
+                  onClick={() => onUpdate({ ...day, type: 'STAY' })}
+                  disabled={isFirstDay}
+                  className={cn(
+                    "px-2 py-0.5 text-xs font-medium rounded-md transition-colors",
+                    day.type === 'STAY' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700",
+                    isFirstDay && "opacity-50 cursor-not-allowed grayscale"
+                  )}
+                >
+                  Stay
+                </button>
+              </div>
+
+              {/* Mobile Delete Button (Below toggle) */}
+              {!isFirstDay && (
+                <button 
+                  onClick={onRemove}
+                  className="md:hidden text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 px-1 py-0.5 hover:bg-red-50 rounded-md"
+                  title="Remove Day"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Delete</span>
+                </button>
+              )}
+            </div>
+
+            {/* Desktop Actions Column (Date & Delete) */}
+            <div className="hidden md:flex flex-col items-end gap-2">
+              {/* Desktop Date Display */}
+              {isFirstDay && onTripStartDateChange ? (
+                <div className="bg-amber-50 text-amber-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-amber-200 flex items-center gap-2 shadow-sm">
+                  <CalendarIcon className="w-4 h-4 text-amber-500" />
+                  <input
+                    type="date"
+                    value={tripStartDate || ''}
+                    min={format(new Date(), 'yyyy-MM-dd')}
+                    onChange={(e) => onTripStartDateChange(e.target.value)}
+                    className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold"
+                  />
+                </div>
+              ) : (
+                currentDayDate && (
+                  <div className="bg-white text-gray-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-gray-200 flex items-center gap-2 shadow-sm">
+                    <CalendarIcon className="w-4 h-4 text-amber-500" />
+                    {format(currentDayDate, 'dd MMM yyyy')}
+                  </div>
+                )
+              )}
+
+              {/* Desktop Delete Button (Below date) */}
+              {!isFirstDay && (
+                <button 
+                  onClick={onRemove}
+                  className="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded-md group"
+                  title="Remove Day"
+                >
+                  <Trash2 className="w-4 h-4 md:opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Delete Day</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

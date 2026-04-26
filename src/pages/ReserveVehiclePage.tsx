@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Calendar, Users, Car, MapPin, Clock, ChevronDown, Info, X, CheckCircle, Plus, Map as MapIcon, Loader2 } from 'lucide-react';
-import { differenceInCalendarDays, format } from 'date-fns';
+import { differenceInCalendarDays, format, addDays, parseISO } from 'date-fns';
 import { cn } from '../utils/cn';
 import type { Trip, Day, TripLocation, MappedPoint, RouteSegment } from '../types';
 import { TripDayEditor } from '../components/TripDayEditor';
@@ -43,6 +43,7 @@ export const ReserveVehiclePage = () => {
   const [endLocation, setEndLocation] = useState('');
   const [summary, setSummary] = useState<TourSummary | null>(null);
   const [booked, setBooked] = useState(false);
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   // Location basis states
   const [showPlanner, setShowPlanner] = useState(false);
@@ -520,6 +521,7 @@ export const ReserveVehiclePage = () => {
                       id="startDate"
                       type="date"
                       value={startDate}
+                      min={today}
                       onChange={e => setStartDate(e.target.value)}
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all bg-gray-50 hover:bg-white cursor-pointer"
@@ -536,7 +538,7 @@ export const ReserveVehiclePage = () => {
                       id="endDate"
                       type="date"
                       value={endDate}
-                      min={startDate}
+                      min={startDate ? format(addDays(parseISO(startDate), 1), 'yyyy-MM-dd') : today}
                       onChange={e => setEndDate(e.target.value)}
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all bg-gray-50 hover:bg-white cursor-pointer"
