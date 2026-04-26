@@ -5,6 +5,8 @@ import { LandingPage } from './pages/LandingPage';
 import { TripPlanner } from './pages/TripPlanner';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
+import { ReserveVehiclePage } from './pages/ReserveVehiclePage';
+import { GalleryPage } from './pages/GalleryPage';
 
 function App() {
   return (
@@ -15,9 +17,11 @@ function App() {
            <div className="flex-1">
              <Routes>
                <Route path="/" element={<LandingPage />} />
-               <Route path="/plan" element={<TripPlanner />} />
                <Route path="/about" element={<AboutPage />} />
+               <Route path="/reserve" element={<ReserveVehiclePage />} />
+               <Route path="/gallery" element={<GalleryPage />} />
                <Route path="/contact" element={<ContactPage />} />
+               <Route path="/plan" element={<TripPlanner />} />
                <Route path="*" element={<Navigate to="/" replace />} />
              </Routes>
            </div>
