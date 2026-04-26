@@ -44,7 +44,8 @@ const SortableStopItem = ({ stop, onEdit, onDelete, disabled }: { stop: Stop; on
                 <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-500 rounded-full" />
              </div>
              <div onClick={!disabled ? onEdit : undefined} className={cn("font-medium text-gray-800 text-sm md:text-base", !disabled && "cursor-pointer hover:underline")}>
-                  {truncateText(stop.name)}
+                  <span className="hidden md:inline">{stop.name}</span>
+                  <span className="inline md:hidden">{truncateText(stop.name)}</span>
              </div>
          </div>
          {!disabled && (
@@ -212,23 +213,26 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
       {!isDateMissing && (
         <div className="md:p-6 p-4">
           {day.type === 'STAY' ? (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 md:p-6 flex flex-col items-center justify-center text-center">
-              <div className="bg-blue-100 p-3 md:p-4 rounded-full mb-3">
-                <Coffee className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 md:p-4 flex flex-col items-center justify-center text-center">
+              <div className="bg-blue-100 p-2 md:p-2.5 rounded-full mb-2">
+                <Coffee className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
               </div>
-              <p className="font-bold text-blue-900 text-base md:text-lg">Stay Day at {displayStartLocation?.name || "Previous Location"}</p>
-              <p className="text-xs md:text-sm text-blue-600 mt-1">Relax and enjoy your stay. No travel planned for today.</p>
-              <div className="mt-4 md:mt-6 text-[10px] md:text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-3 md:px-4 py-1.5 rounded-full border border-blue-100">
-                Vehicle Daily Charge Applies
+              <p className="font-bold text-blue-900 text-sm md:text-base truncate max-w-full">
+                Stay Day at <span className="hidden md:inline">{displayStartLocation?.name || "Previous Location"}</span>
+                <span className="inline md:hidden">{truncateText(displayStartLocation?.name || "Previous Location")}</span>
+              </p>
+              <p className="text-[10px] md:text-sm text-blue-600">Relax and enjoy your stay.</p>
+              <div className="mt-2 text-[9px] md:text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-3 py-1 rounded-full border border-blue-100">
+                Daily Charge Applies
               </div>
             </div>
           ) : (
-            <div className="md:space-y-6 space-y-4">
+            <div className="md:space-y-4 space-y-2">
               {/* Start Location */}
               <div className="flex items-start gap-3 md:gap-4">
                 <div className="flex flex-col items-center h-full pt-1.5">
                   <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-green-500 ring-2 md:ring-4 ring-green-100 shrink-0" />
-                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[30px] md:min-h-[40px] mt-1" />
+                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[15px] md:min-h-[25px] mt-1" />
                 </div>
                 <div className="flex-1">
                   <label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Start Location</label>
@@ -239,8 +243,9 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                     >
                       {day.startLocation ? (
                         <span className="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
-                           <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500 shrink-0" />
-                           {truncateText(day.startLocation.name)}
+                       <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500 shrink-0" />
+                           <span className="hidden md:inline">{day.startLocation.name}</span>
+                           <span className="inline md:hidden">{truncateText(day.startLocation.name)}</span>
                         </span>
                       ) : (
                         <span className="text-xs md:text-sm text-gray-400 group-hover:text-amber-600 font-medium truncate block">Select starting point...</span>
@@ -249,14 +254,15 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                   ) : (
                     <div className="px-4 md:px-5 py-2.5 md:py-4 rounded-lg md:rounded-xl border border-gray-100 bg-gray-50 text-gray-700 font-semibold text-sm md:text-base flex items-center gap-2">
                        <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 shrink-0" />
-                       {truncateText(displayStartLocation?.name || "Previous Day End")}
+                       <span className="hidden md:inline">{displayStartLocation?.name || "Previous Day End"}</span>
+                       <span className="inline md:hidden">{truncateText(displayStartLocation?.name || "Previous Day End")}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Stops */}
-              <div className="md:space-y-4 space-y-3"> 
+              <div className="md:space-y-2 space-y-1.5"> 
                 <DndContext 
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -281,7 +287,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className="flex flex-col items-center h-full pt-1.5">
                     <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-400 shrink-0" />
-                    <div className="w-0.5 h-full bg-gray-200 min-h-[30px] md:min-h-[40px] mt-1" />
+                    <div className="w-0.5 h-full bg-gray-200 min-h-[15px] md:min-h-[25px] mt-1" />
                   </div>
                   <div className="flex-1">
                       <button 
@@ -308,7 +314,8 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                       {day.endLocation ? (
                         <span className="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
                            <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500 shrink-0" />
-                           {truncateText(day.endLocation.name)}
+                           <span className="hidden md:inline">{day.endLocation.name}</span>
+                           <span className="inline md:hidden">{truncateText(day.endLocation.name)}</span>
                         </span>
                       ) : (
                         <span className="text-xs md:text-sm text-gray-400 group-hover:text-amber-600 font-medium truncate block">Select destination...</span>

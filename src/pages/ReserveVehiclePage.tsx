@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, Users, Car, MapPin, Clock, ChevronDown, Info, X, CheckCircle, Plus, Map as MapIcon, Loader2 } from 'lucide-react';
 import { differenceInCalendarDays, format } from 'date-fns';
 import { cn } from '../utils/cn';
 import type { Trip, Day, TripLocation, MappedPoint, RouteSegment } from '../types';
-import { TripHeader } from '../components/TripHeader';
 import { TripDayEditor } from '../components/TripDayEditor';
 import { TripRouteSummary } from '../components/TripRouteSummary';
 import { api } from '../api/mock';
@@ -127,12 +126,17 @@ export const ReserveVehiclePage = () => {
     stops: d.stops.map(s => ({ lat: s.lat, lng: s.lng }))
   }))) + tripStartDate + basis + showPlanner;
 
+  const lastCalculatedKeyRef = useRef<string>('');
+
   useEffect(() => {
     if (basis === 'location' && showPlanner && tripStartDate && !isCalculating) {
-      calculateRoute();
+      if (tripInputKey !== lastCalculatedKeyRef.current) {
+        lastCalculatedKeyRef.current = tripInputKey;
+        calculateRoute();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tripInputKey]);
+  }, [tripInputKey, isCalculating]);
 
   // Trip Management Logic (from TripPlanner.tsx)
   const handleDayUpdate = (dayIndex: number, updatedDay: Day) => {
@@ -146,8 +150,8 @@ export const ReserveVehiclePage = () => {
 
     // Auto-STAY logic: same start/end and no stops
     if (updatedDay.type === 'TRAVEL' && updatedDay.startLocation && updatedDay.endLocation) {
-      const isSame = updatedDay.startLocation.lat === updatedDay.endLocation.lat && 
-                     updatedDay.startLocation.lng === updatedDay.endLocation.lng;
+      const isSame = updatedDay.startLocation.lat === updatedDay.endLocation.lat &&
+        updatedDay.startLocation.lng === updatedDay.endLocation.lng;
       if (isSame && updatedDay.stops.length === 0) {
         updatedDay.type = 'STAY';
       }
@@ -161,13 +165,13 @@ export const ReserveVehiclePage = () => {
   const addDay = () => {
     const lastDay = trip.days[trip.days.length - 1];
     const newDayNo = lastDay.dayNo + 1;
-    
+
     let startLoc: TripLocation | undefined;
-    
+
     if (lastDay.type === 'TRAVEL') {
-        startLoc = lastDay.endLocation;
+      startLoc = lastDay.endLocation;
     } else {
-        startLoc = lastDay.startLocation; 
+      startLoc = lastDay.startLocation;
     }
 
     setTrip({
@@ -186,49 +190,49 @@ export const ReserveVehiclePage = () => {
 
   const removeDay = (indexToRemove: number) => {
     const newDays = trip.days
-        .filter((_, index) => index !== indexToRemove)
-        .map((day, index) => ({
-            ...day,
-            dayNo: index + 1
-        }));
+      .filter((_, index) => index !== indexToRemove)
+      .map((day, index) => ({
+        ...day,
+        dayNo: index + 1
+      }));
     setTrip({ ...trip, days: newDays });
   };
 
   const getTripSegments = (): RouteSegment[] => {
-      const segments: RouteSegment[] = [];
-      const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#F43F5E', '#06B6D4'];
+    const segments: RouteSegment[] = [];
+    const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#F43F5E', '#06B6D4'];
 
-      trip.days.forEach((day, index) => {
-          const points: MappedPoint[] = [];
-          const isFirstDay = index === 0;
+    trip.days.forEach((day, index) => {
+      const points: MappedPoint[] = [];
+      const isFirstDay = index === 0;
 
-          if (day.startLocation) {
-              points.push({ 
-                  location: day.startLocation, 
-                  type: isFirstDay ? 'START' : 'STOP'
-              });
-          }
+      if (day.startLocation) {
+        points.push({
+          location: day.startLocation,
+          type: isFirstDay ? 'START' : 'STOP'
+        });
+      }
 
-          day.stops.forEach(stop => {
-              points.push({ location: stop, type: 'STOP' });
-          });
-
-          if (day.endLocation && day.type === 'TRAVEL') {
-               points.push({ 
-                   location: day.endLocation, 
-                   type: 'END' 
-               });
-          }
-
-          if (points.length > 0) {
-              segments.push({
-                  points,
-                  color: colors[index % colors.length]
-              });
-          }
+      day.stops.forEach(stop => {
+        points.push({ location: stop, type: 'STOP' });
       });
 
-      return segments;
+      if (day.endLocation && day.type === 'TRAVEL') {
+        points.push({
+          location: day.endLocation,
+          type: 'END'
+        });
+      }
+
+      if (points.length > 0) {
+        segments.push({
+          points,
+          color: colors[index % colors.length]
+        });
+      }
+    });
+
+    return segments;
   };
 
   const calculateRoute = async () => {
@@ -395,10 +399,10 @@ export const ReserveVehiclePage = () => {
       </div>
 
       {/* ── Form Card ── */}
-      <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="max-w-3xl mx-auto px-1 md:px-4 py-12">
         <div className="bg-white rounded-3xl shadow-2xl shadow-amber-100 overflow-hidden border border-amber-100">
           {/* Card Header */}
-          <div className="px-8 pt-8 pb-6 border-b border-gray-100">
+          <div className="px-3 md:px-8 pt-8 pb-6 border-b border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-1">Reserve a Vehicle By</h2>
             <p className="text-gray-500 text-sm">Select your reservation basis below</p>
 
@@ -434,7 +438,7 @@ export const ReserveVehiclePage = () => {
           </div>
 
           {/* Form Body */}
-          <form onSubmit={handleSubmit} className="px-8 py-8">
+          <form onSubmit={handleSubmit} className="px-3 md:px-8 py-8">
             <div className={cn("grid grid-cols-1 gap-6", basis === 'date' ? "md:grid-cols-2" : "md:grid-cols-1 max-w-md mx-auto")}>
 
               {/* Left Column */}
@@ -558,16 +562,16 @@ export const ReserveVehiclePage = () => {
         {/* ── Daily Route Planner (Location Basis) ── */}
         {basis === 'location' && showPlanner && (
           <div className="mt-12 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-amber-100">
+            <div className="bg-white rounded-3xl p-2 md:p-8 shadow-xl border border-amber-100">
               <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <MapIcon className="w-6 h-6 text-amber-500" />
                 Plan Your Daily Route
               </h3>
-              
+
               <div className="space-y-6">
                 {trip.days.map((day, index) => (
                   <TripDayEditor
-                    key={day.dayNo} 
+                    key={day.dayNo}
                     day={day}
                     onUpdate={(updated) => handleDayUpdate(index, updated)}
                     onRemove={() => removeDay(index)}
@@ -583,7 +587,7 @@ export const ReserveVehiclePage = () => {
                 {(() => {
                   const lastDay = trip.days[trip.days.length - 1];
                   const isDay1 = trip.days.length === 1;
-                  const isLastDayComplete = 
+                  const isLastDayComplete =
                     tripStartDate && (
                       (lastDay.type === 'TRAVEL' && (isDay1 ? !!lastDay.startLocation : true) && !!lastDay.endLocation) ||
                       (lastDay.type === 'STAY')
@@ -596,7 +600,7 @@ export const ReserveVehiclePage = () => {
                         disabled={!isLastDayComplete}
                         className={cn(
                           "flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all shadow-sm border",
-                          isLastDayComplete 
+                          isLastDayComplete
                             ? "bg-white border-dashed border-amber-300 text-amber-600 hover:border-amber-500 hover:bg-amber-50"
                             : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
                         )}
