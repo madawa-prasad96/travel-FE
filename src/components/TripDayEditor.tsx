@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Navigation, Coffee, Trash2, Plus, GripVertical as GripIcon } from 'lucide-react';
+import { Navigation, Coffee, Trash2, Plus, GripVertical as GripIcon, Calendar as CalendarIcon, Info, MapPin } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { format, addDays, parseISO } from 'date-fns';
 import { StopPickerModal } from './StopPickerModal';
 import type { Day, TripLocation, Stop } from '../types';
 import { cn } from '../utils/cn';
@@ -13,10 +14,12 @@ interface TripDayEditorProps {
   onRemove: () => void;
   isFirstDay: boolean;
   previousDayEndLocation?: TripLocation;
+  tripStartDate?: string;
+  onTripStartDateChange?: (date: string) => void;
 }
 
-const SortableStopItem = ({ stop, onEdit, onDelete }: { stop: Stop; onEdit: () => void; onDelete: () => void }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: stop.id });
+const SortableStopItem = ({ stop, onEdit, onDelete, disabled }: { stop: Stop; onEdit: () => void; onDelete: () => void; disabled?: boolean }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: stop.id, disabled });
   
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -24,27 +27,31 @@ const SortableStopItem = ({ stop, onEdit, onDelete }: { stop: Stop; onEdit: () =
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all group">
+    <div ref={setNodeRef} style={style} className={cn(
+        "flex items-center justify-between p-4 bg-white border border-gray-100 rounded-lg shadow-sm transition-all group",
+        disabled ? "opacity-60 grayscale-[0.5]" : "hover:shadow-md"
+    )}>
          <div className="flex items-center gap-3">
-             <div {...attributes} {...listeners} className="cursor-grab text-gray-300 hover:text-gray-500">
+             <div {...attributes} {...listeners} className={cn("text-gray-300 hover:text-gray-500", !disabled && "cursor-grab")}>
                 <GripIcon className="w-5 h-5" />
              </div>
              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm">
-                {/* Dynamically numbered not easy in isolated component, use a dot or icon */}
                 <span className="w-2 h-2 bg-amber-500 rounded-full" />
              </div>
-             <div onClick={onEdit} className="cursor-pointer hover:underline cursor-pointer">
-                 <h4 className="font-medium text-gray-800">{stop.name}</h4>
+             <div onClick={!disabled ? onEdit : undefined} className={cn("font-medium text-gray-800", !disabled && "cursor-pointer hover:underline")}>
+                  {stop.name}
              </div>
          </div>
-         <button onClick={onDelete} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Trash2 className="w-4 h-4" />
-         </button>
+         {!disabled && (
+            <button onClick={onDelete} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Trash2 className="w-4 h-4" />
+            </button>
+         )}
     </div>
   );
 };
 
-export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDayEndLocation }: TripDayEditorProps) => {
+export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDayEndLocation, tripStartDate, onTripStartDateChange }: TripDayEditorProps) => {
   const [isStopPickerOpen, setIsStopPickerOpen] = useState(false);
   const [editingStopIndex, setEditingStopIndex] = useState<number | null>(null); 
   const [editingType, setEditingType] = useState<'START' | 'END' | 'STOP'>('STOP');
@@ -55,6 +62,9 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const currentDayDate = tripStartDate ? addDays(parseISO(tripStartDate), day.dayNo - 1) : null;
+  const isDateMissing = isFirstDay && !tripStartDate;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -74,15 +84,12 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
     } else if (editingType === 'END') {
       onUpdate({ ...day, endLocation: location });
     } else {
-      // STOP
       const newStop: Stop = { ...location, id: crypto.randomUUID() };
       const newStops = [...day.stops];
       
-      // If we were editing an existing stop (not implemented in UI yet but good for logic)
       if (editingStopIndex !== null) {
         newStops[editingStopIndex] = newStop;
       } else {
-         // Check constraint: Max 10 stops
          if (newStops.length >= 10) {
             alert("Max 10 stops allowed per day.");
             return;
@@ -100,162 +107,205 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
   };
 
   const openPicker = (type: 'START' | 'END' | 'STOP', index: number | null = null) => {
+    if (isDateMissing) return;
     setEditingType(type);
     setEditingStopIndex(index);
     setIsStopPickerOpen(true);
   };
 
-  // Determine effective start location
   const displayStartLocation = isFirstDay ? day.startLocation : (previousDayEndLocation || day.startLocation);
 
-  const getHeaderIcon = () => {
-        return (
+  return (
+    <div className={cn(
+        "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all",
+        !isDateMissing && "hover:shadow-md"
+    )}>
+      <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'}`}>
-                    {day.type === 'TRAVEL' ? <Navigation className="w-5 h-5" /> : <Coffee className="w-5 h-5" />}
-                </div>
+              <div className={cn(
+                  "p-2 rounded-lg",
+                  day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+              )}>
+                {day.type === 'TRAVEL' ? <Navigation className="w-5 h-5" /> : <Coffee className="w-5 h-5" />}
+              </div>
+              <div>
                 <h3 className="text-lg font-bold text-gray-800">Day {day.dayNo}</h3>
-            </div>
-        );
-    };
-
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all hover:shadow-md">
-            {/* Header */}
-            <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
-                <div className="flex items-center gap-4">
-                    {getHeaderIcon()}
-                    <div className="flex bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
-                        <button
-                            onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
-                            className={cn(
-                                "px-3 py-1 text-sm font-medium rounded-md transition-colors",
-                                day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
-                            )}
-                        >
-                            Travel
-                        </button>
-                        <button
-                            onClick={() => onUpdate({ ...day, type: 'STAY' })}
-                            className={cn(
-                                "px-3 py-1 text-sm font-medium rounded-md transition-colors",
-                                day.type === 'STAY' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700"
-                            )}
-                        >
-                            Stay
-                        </button>
-                    </div>
-                </div>
-                
-                {!isFirstDay && (
-                    <button 
-                        onClick={onRemove}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg"
-                        title="Remove Day"
-                    >
-                        <Trash2 className="w-5 h-5" />
-                    </button>
+                {isFirstDay && onTripStartDateChange && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <CalendarIcon className="w-3.5 h-3.5 text-amber-500" />
+                    <input
+                      type="date"
+                      value={tripStartDate || ''}
+                      onChange={(e) => onTripStartDateChange(e.target.value)}
+                      className="text-xs font-medium border-b border-dashed border-amber-300 focus:border-amber-500 outline-none bg-transparent text-amber-700 cursor-pointer"
+                    />
+                  </div>
                 )}
-            </div>
-      {day.type === 'STAY' ? (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex flex-col items-center justify-center text-center">
-            <div className="bg-blue-100 p-3 rounded-full mb-3">
-              <Coffee className="w-6 h-6 text-blue-600" />
-            </div>
-            <p className="font-medium text-blue-900">Stay Day at {displayStartLocation?.name || "Previous Location"}</p>
-            <p className="text-sm text-blue-600 mt-1">Relax and enjoy your stay. No travel planned for today.</p>
-            <div className="mt-4 text-xs text-gray-500 uppercase tracking-wide font-semibold">
-              Standard Charge Applied
-            </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-           {/* Start Location */}
-           <div className="flex items-start gap-3">
-              <div className="mt-1">
-                 <div className="w-3 h-3 rounded-full bg-green-500 ring-4 ring-green-100" />
-                 {/* Connector Line */}
-                 <div className="w-0.5 h-full bg-gray-200 mx-auto mt-1 min-h-[40px]" />
               </div>
-              <div className="flex-1">
-                 <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Start Location</label>
-                 {isFirstDay ? (
-                   <button 
-                     onClick={() => openPicker('START')}
-                     className="w-full text-left p-4 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                   >
-                     {day.startLocation ? (
-                       <span className="font-medium text-gray-900">{day.startLocation.name}</span>
-                     ) : (
-                       <span className="text-gray-400 group-hover:text-blue-500">Select start location...</span>
-                     )}
-                   </button>
-                 ) : (
-                   <div className="p-4 rounded-lg border bg-gray-50 text-gray-600">
-                      {displayStartLocation?.name || "Previous Day End"}
-                   </div>
-                 )}
-              </div>
-           </div>
+            </div>
 
-           {/* Stops */}
-           <div className="pl-0"> 
-              <DndContext 
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+            <div className="flex bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+              <button
+                onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
+                className={cn(
+                  "px-3 py-1 text-sm font-medium rounded-md transition-colors",
+                  day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
+                )}
               >
-                <SortableContext 
-                    items={day.stops.map(s => s.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {day.stops.map((stop, index) => (
-                        <SortableStopItem 
-                            key={stop.id} 
-                            stop={stop} 
-                            onEdit={() => openPicker('STOP', index)}
-                            onDelete={() => removeStop(index)}
-                        />
-                    ))}
-                </SortableContext>
-              </DndContext>
+                Travel
+              </button>
+              <button
+                onClick={() => onUpdate({ ...day, type: 'STAY' })}
+                disabled={isFirstDay}
+                className={cn(
+                  "px-3 py-1 text-sm font-medium rounded-md transition-colors",
+                  day.type === 'STAY' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700",
+                  isFirstDay && "opacity-50 cursor-not-allowed grayscale"
+                )}
+                title={isFirstDay ? "Day 1 must be a Travel day" : ""}
+              >
+                Stay
+              </button>
+            </div>
+          </div>
 
-               {/* Add Stop Button */}
-               <div className="flex items-start gap-3 mb-4">
-                  <div className="mt-1 flex flex-col items-center">
-                     <div className="w-2 h-2 rounded-full bg-blue-500/30" />
-                     <div className="w-0.5 h-full bg-gray-200 mx-auto mt-1 min-h-[40px]" />
+          <div className="flex items-center gap-4">
+            {currentDayDate && (
+              <div className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm font-bold border border-amber-100 flex items-center gap-2">
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {format(currentDayDate, 'dd MMM yyyy')}
+              </div>
+            )}
+            {!isFirstDay && (
+              <button 
+                onClick={onRemove}
+                className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                title="Remove Day"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isDateMissing && (
+        <div className="p-8 text-center bg-amber-50/50">
+          <div className="bg-amber-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Info className="w-6 h-6 text-amber-600" />
+          </div>
+          <p className="text-amber-800 font-semibold">Start Date Required</p>
+          <p className="text-sm text-amber-600 mt-1">Please select the trip starting date above to begin planning your route.</p>
+        </div>
+      )}
+
+      {!isDateMissing && (
+        <div className="p-6">
+          {day.type === 'STAY' ? (
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+              <div className="bg-blue-100 p-4 rounded-full mb-3">
+                <Coffee className="w-8 h-8 text-blue-600" />
+              </div>
+              <p className="font-bold text-blue-900 text-lg">Stay Day at {displayStartLocation?.name || "Previous Location"}</p>
+              <p className="text-blue-600 mt-1">Relax and enjoy your stay. No travel planned for today.</p>
+              <div className="mt-6 text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-4 py-1.5 rounded-full border border-blue-100">
+                Vehicle Daily Charge Applies
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="flex flex-col items-center h-full pt-1.5">
+                  <div className="w-4 h-4 rounded-full bg-green-500 ring-4 ring-green-100 shrink-0" />
+                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[40px] mt-1" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Start Location</label>
+                  {isFirstDay ? (
+                    <button 
+                      onClick={() => openPicker('START')}
+                      className="w-full text-left px-5 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group relative overflow-hidden"
+                    >
+                      {day.startLocation ? (
+                        <span className="font-bold text-gray-800 flex items-center gap-2">
+                           <MapPin className="w-4 h-4 text-amber-500" />
+                           {day.startLocation.name}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 group-hover:text-amber-600 font-medium">Select starting point...</span>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="px-5 py-4 rounded-xl border border-gray-100 bg-gray-50 text-gray-700 font-semibold flex items-center gap-2">
+                       <MapPin className="w-4 h-4 text-gray-400" />
+                       {displayStartLocation?.name || "Previous Day End"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4"> 
+                <DndContext 
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext 
+                      items={day.stops.map(s => s.id)}
+                      strategy={verticalListSortingStrategy}
+                  >
+                      {day.stops.map((stop, index) => (
+                          <SortableStopItem 
+                              key={stop.id} 
+                              stop={stop} 
+                              onEdit={() => openPicker('STOP', index)}
+                              onDelete={() => removeStop(index)}
+                          />
+                      ))}
+                  </SortableContext>
+                </DndContext>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex flex-col items-center h-full pt-1.5">
+                    <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                    <div className="w-0.5 h-full bg-gray-200 min-h-[40px] mt-1" />
                   </div>
                   <div className="flex-1">
                       <button 
                         onClick={() => openPicker('STOP')}
-                        className="flex items-center gap-2 text-sm text-blue-600 font-medium hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors w-fit"
+                        className="flex items-center gap-2 text-sm text-amber-600 font-bold hover:text-amber-700 hover:bg-amber-50 px-4 py-2.5 rounded-xl transition-all border border-transparent hover:border-amber-200 w-fit"
                       >
                         <Plus className="w-4 h-4" /> Add Stop
                       </button>
                   </div>
-               </div>
-           </div>
+                </div>
+              </div>
 
-           {/* End Location */}
-           <div className="flex items-start gap-3">
-              <div className="mt-1">
-                 <div className="w-3 h-3 rounded-full bg-red-500 ring-4 ring-red-100" />
+              <div className="flex items-start gap-4">
+                <div className="pt-1.5">
+                  <div className="w-4 h-4 rounded-full bg-red-500 ring-4 ring-red-100 shrink-0" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Destination</label>
+                  <button 
+                      onClick={() => openPicker('END')}
+                      className="w-full text-left px-5 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group"
+                    >
+                      {day.endLocation ? (
+                        <span className="font-bold text-gray-800 flex items-center gap-2">
+                           <MapPin className="w-4 h-4 text-red-500" />
+                           {day.endLocation.name}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 group-hover:text-amber-600 font-medium">Select destination for the day...</span>
+                      )}
+                    </button>
+                </div>
               </div>
-              <div className="flex-1">
-                 <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Destination</label>
-                 <button 
-                     onClick={() => openPicker('END')}
-                     className="w-full text-left p-4 rounded-lg border hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                   >
-                     {day.endLocation ? (
-                       <span className="font-medium text-gray-900">{day.endLocation.name}</span>
-                     ) : (
-                       <span className="text-gray-400 group-hover:text-blue-500">Select destination...</span>
-                     )}
-                   </button>
-              </div>
-           </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -263,7 +313,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
         isOpen={isStopPickerOpen}
         onClose={() => setIsStopPickerOpen(false)}
         onSelect={handleLocationSelect}
-        initialLocation={day.stops[editingStopIndex as number]}
+        initialLocation={editingStopIndex !== null ? day.stops[editingStopIndex] : undefined}
       />
     </div>
   );
