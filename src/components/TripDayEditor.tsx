@@ -8,6 +8,11 @@ import { StopPickerModal } from './StopPickerModal';
 import type { Day, TripLocation, Stop } from '../types';
 import { cn } from '../utils/cn';
 
+const truncateText = (text: string, limit: number = 18) => {
+  if (text.length <= limit) return text;
+  return text.slice(0, limit) + '...';
+};
+
 interface TripDayEditorProps {
   day: Day;
   onUpdate: (day: Day) => void;
@@ -28,22 +33,22 @@ const SortableStopItem = ({ stop, onEdit, onDelete, disabled }: { stop: Stop; on
 
   return (
     <div ref={setNodeRef} style={style} className={cn(
-        "flex items-center justify-between p-4 bg-white border border-gray-100 rounded-lg shadow-sm transition-all group",
+        "flex items-center justify-between md:p-4 p-3 bg-white border border-gray-100 rounded-lg shadow-sm transition-all group",
         disabled ? "opacity-60 grayscale-[0.5]" : "hover:shadow-md"
     )}>
-         <div className="flex items-center gap-3">
+         <div className="flex items-center gap-2 md:gap-3">
              <div {...attributes} {...listeners} className={cn("text-gray-300 hover:text-gray-500", !disabled && "cursor-grab")}>
-                <GripIcon className="w-5 h-5" />
+                <GripIcon className="w-4 h-4 md:w-5 md:h-5" />
              </div>
-             <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm">
-                <span className="w-2 h-2 bg-amber-500 rounded-full" />
+             <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-xs md:text-sm">
+                <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-500 rounded-full" />
              </div>
-             <div onClick={!disabled ? onEdit : undefined} className={cn("font-medium text-gray-800", !disabled && "cursor-pointer hover:underline")}>
-                  {stop.name}
+             <div onClick={!disabled ? onEdit : undefined} className={cn("font-medium text-gray-800 text-sm md:text-base", !disabled && "cursor-pointer hover:underline")}>
+                  {truncateText(stop.name)}
              </div>
          </div>
          {!disabled && (
-            <button onClick={onDelete} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={onDelete} className="text-gray-300 hover:text-red-500 md:opacity-0 group-hover:opacity-100 transition-opacity">
                 <Trash2 className="w-4 h-4" />
             </button>
          )}
@@ -120,26 +125,48 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
         "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all",
         !isDateMissing && "hover:shadow-md"
     )}>
-      <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
+      {/* Header */}
+      <div className="bg-gray-50 md:px-6 px-4 py-3 md:py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between gap-3">
+          {/* Left: Day & Date */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className={cn(
-                  "p-2 rounded-lg",
+                  "p-1.5 md:p-2 rounded-lg shrink-0",
                   day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
               )}>
-                {day.type === 'TRAVEL' ? <Navigation className="w-5 h-5" /> : <Coffee className="w-5 h-5" />}
+                {day.type === 'TRAVEL' ? <Navigation className="w-4 h-4 md:w-5 md:h-5" /> : <Coffee className="w-4 h-4 md:w-5 md:h-5" />}
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">Day {day.dayNo}</h3>
-              </div>
+              <h3 className="text-base md:text-lg font-bold text-gray-800 whitespace-nowrap">Day {day.dayNo}</h3>
             </div>
+            
+            {isFirstDay && onTripStartDateChange ? (
+              <div className="bg-amber-50 text-amber-700 px-2 md:px-4 py-0.5 md:py-1.5 rounded md:rounded-xl text-[10px] md:text-sm font-bold border border-amber-200 flex items-center gap-1.5 shadow-sm w-fit">
+                <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-amber-500" />
+                <input
+                  type="date"
+                  value={tripStartDate || ''}
+                  onChange={(e) => onTripStartDateChange(e.target.value)}
+                  className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold w-20 md:w-auto"
+                />
+              </div>
+            ) : (
+              currentDayDate && (
+                <div className="bg-white text-gray-700 px-2 md:px-4 py-0.5 md:py-1.5 rounded md:rounded-xl text-[10px] md:text-sm font-bold border border-gray-200 flex items-center gap-1.5 shadow-sm w-fit">
+                  <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-amber-500" />
+                  {format(currentDayDate, 'dd MMM yyyy')}
+                </div>
+              )
+            )}
+          </div>
 
-            <div className="flex bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+          {/* Right: Toggle & Delete */}
+          <div className="flex flex-col items-end gap-1.5 md:gap-2 shrink-0">
+            <div className="flex bg-white rounded-lg p-0.5 md:p-1 border border-gray-200 shadow-sm">
               <button
                 onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
                 className={cn(
-                  "px-3 py-1 text-sm font-medium rounded-md transition-colors",
+                  "px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-medium rounded-md transition-colors",
                   day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
                 )}
               >
@@ -149,7 +176,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                 onClick={() => onUpdate({ ...day, type: 'STAY' })}
                 disabled={isFirstDay}
                 className={cn(
-                  "px-3 py-1 text-sm font-medium rounded-md transition-colors",
+                  "px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-medium rounded-md transition-colors",
                   day.type === 'STAY' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700",
                   isFirstDay && "opacity-50 cursor-not-allowed grayscale"
                 )}
@@ -158,34 +185,14 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                 Stay
               </button>
             </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {isFirstDay && onTripStartDateChange ? (
-              <div className="bg-amber-50 text-amber-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-amber-200 flex items-center gap-2 shadow-sm">
-                <CalendarIcon className="w-4 h-4 text-amber-500" />
-                <input
-                  type="date"
-                  value={tripStartDate || ''}
-                  onChange={(e) => onTripStartDateChange(e.target.value)}
-                  className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold"
-                />
-              </div>
-            ) : (
-              currentDayDate && (
-                <div className="bg-white text-gray-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-gray-200 flex items-center gap-2 shadow-sm">
-                  <CalendarIcon className="w-4 h-4 text-amber-500" />
-                  {format(currentDayDate, 'dd MMM yyyy')}
-                </div>
-              )
-            )}
             {!isFirstDay && (
               <button 
                 onClick={onRemove}
-                className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                className="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 px-1.5 py-0.5 hover:bg-red-50 rounded-md"
                 title="Remove Day"
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">Delete</span>
               </button>
             )}
           </div>
@@ -203,51 +210,53 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
       )}
 
       {!isDateMissing && (
-        <div className="p-6">
+        <div className="md:p-6 p-4">
           {day.type === 'STAY' ? (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 flex flex-col items-center justify-center text-center">
-              <div className="bg-blue-100 p-4 rounded-full mb-3">
-                <Coffee className="w-8 h-8 text-blue-600" />
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 md:p-6 flex flex-col items-center justify-center text-center">
+              <div className="bg-blue-100 p-3 md:p-4 rounded-full mb-3">
+                <Coffee className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
               </div>
-              <p className="font-bold text-blue-900 text-lg">Stay Day at {displayStartLocation?.name || "Previous Location"}</p>
-              <p className="text-blue-600 mt-1">Relax and enjoy your stay. No travel planned for today.</p>
-              <div className="mt-6 text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-4 py-1.5 rounded-full border border-blue-100">
+              <p className="font-bold text-blue-900 text-base md:text-lg">Stay Day at {displayStartLocation?.name || "Previous Location"}</p>
+              <p className="text-xs md:text-sm text-blue-600 mt-1">Relax and enjoy your stay. No travel planned for today.</p>
+              <div className="mt-4 md:mt-6 text-[10px] md:text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-3 md:px-4 py-1.5 rounded-full border border-blue-100">
                 Vehicle Daily Charge Applies
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
+            <div className="md:space-y-6 space-y-4">
+              {/* Start Location */}
+              <div className="flex items-start gap-3 md:gap-4">
                 <div className="flex flex-col items-center h-full pt-1.5">
-                  <div className="w-4 h-4 rounded-full bg-green-500 ring-4 ring-green-100 shrink-0" />
-                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[40px] mt-1" />
+                  <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-green-500 ring-2 md:ring-4 ring-green-100 shrink-0" />
+                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[30px] md:min-h-[40px] mt-1" />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Start Location</label>
+                  <label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Start Location</label>
                   {isFirstDay ? (
                     <button 
                       onClick={() => openPicker('START')}
-                      className="w-full text-left px-5 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group relative overflow-hidden"
+                      className="w-full text-left px-4 md:px-5 py-2.5 md:py-4 rounded-lg md:rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group relative overflow-hidden"
                     >
                       {day.startLocation ? (
-                        <span className="font-bold text-gray-800 flex items-center gap-2">
-                           <MapPin className="w-4 h-4 text-amber-500" />
-                           {day.startLocation.name}
+                        <span className="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
+                           <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500 shrink-0" />
+                           {truncateText(day.startLocation.name)}
                         </span>
                       ) : (
-                        <span className="text-gray-400 group-hover:text-amber-600 font-medium">Select starting point...</span>
+                        <span className="text-xs md:text-sm text-gray-400 group-hover:text-amber-600 font-medium truncate block">Select starting point...</span>
                       )}
                     </button>
                   ) : (
-                    <div className="px-5 py-4 rounded-xl border border-gray-100 bg-gray-50 text-gray-700 font-semibold flex items-center gap-2">
-                       <MapPin className="w-4 h-4 text-gray-400" />
-                       {displayStartLocation?.name || "Previous Day End"}
+                    <div className="px-4 md:px-5 py-2.5 md:py-4 rounded-lg md:rounded-xl border border-gray-100 bg-gray-50 text-gray-700 font-semibold text-sm md:text-base flex items-center gap-2">
+                       <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 shrink-0" />
+                       {truncateText(displayStartLocation?.name || "Previous Day End")}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-4"> 
+              {/* Stops */}
+              <div className="md:space-y-4 space-y-3"> 
                 <DndContext 
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -268,39 +277,41 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                   </SortableContext>
                 </DndContext>
 
-                <div className="flex items-start gap-4">
+                {/* Add Stop Button */}
+                <div className="flex items-start gap-3 md:gap-4">
                   <div className="flex flex-col items-center h-full pt-1.5">
-                    <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                    <div className="w-0.5 h-full bg-gray-200 min-h-[40px] mt-1" />
+                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-400 shrink-0" />
+                    <div className="w-0.5 h-full bg-gray-200 min-h-[30px] md:min-h-[40px] mt-1" />
                   </div>
                   <div className="flex-1">
                       <button 
                         onClick={() => openPicker('STOP')}
-                        className="flex items-center gap-2 text-sm text-amber-600 font-bold hover:text-amber-700 hover:bg-amber-50 px-4 py-2.5 rounded-xl transition-all border border-transparent hover:border-amber-200 w-fit"
+                        className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-amber-600 font-bold hover:text-amber-700 hover:bg-amber-50 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all border border-transparent hover:border-amber-200 w-fit"
                       >
-                        <Plus className="w-4 h-4" /> Add Stop
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> Add Stop
                       </button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
+              {/* End Location */}
+              <div className="flex items-start gap-3 md:gap-4">
                 <div className="pt-1.5">
-                  <div className="w-4 h-4 rounded-full bg-red-500 ring-4 ring-red-100 shrink-0" />
+                  <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-red-500 ring-2 md:ring-4 ring-red-100 shrink-0" />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Destination</label>
+                  <label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Destination</label>
                   <button 
                       onClick={() => openPicker('END')}
-                      className="w-full text-left px-5 py-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group"
+                      className="w-full text-left px-4 md:px-5 py-2.5 md:py-4 rounded-lg md:rounded-xl border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-amber-50/30 transition-all group"
                     >
                       {day.endLocation ? (
-                        <span className="font-bold text-gray-800 flex items-center gap-2">
-                           <MapPin className="w-4 h-4 text-red-500" />
-                           {day.endLocation.name}
+                        <span className="font-bold text-gray-800 text-sm md:text-base flex items-center gap-2">
+                           <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500 shrink-0" />
+                           {truncateText(day.endLocation.name)}
                         </span>
                       ) : (
-                        <span className="text-gray-400 group-hover:text-amber-600 font-medium">Select destination for the day...</span>
+                        <span className="text-xs md:text-sm text-gray-400 group-hover:text-amber-600 font-medium truncate block">Select destination...</span>
                       )}
                     </button>
                 </div>

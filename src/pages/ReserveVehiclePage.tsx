@@ -112,8 +112,47 @@ export const ReserveVehiclePage = () => {
     }, 2500);
   };
 
+  const getPreviousDayEnd = (index: number): TripLocation | undefined => {
+    if (index === 0) return undefined;
+    const prevDay = trip.days[index - 1];
+    if (prevDay.type === 'TRAVEL') return prevDay.endLocation;
+    return prevDay.startLocation;
+  };
+
+  // Auto-calculate route when trip changes (stabilized to avoid infinite loops)
+  const tripInputKey = JSON.stringify(trip.days.map(d => ({
+    type: d.type,
+    start: d.startLocation,
+    end: d.endLocation,
+    stops: d.stops.map(s => ({ lat: s.lat, lng: s.lng }))
+  }))) + tripStartDate + basis + showPlanner;
+
+  useEffect(() => {
+    if (basis === 'location' && showPlanner && tripStartDate && !isCalculating) {
+      calculateRoute();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripInputKey]);
+
   // Trip Management Logic (from TripPlanner.tsx)
   const handleDayUpdate = (dayIndex: number, updatedDay: Day) => {
+    const previousDay = trip.days[dayIndex];
+
+    // If user manually switched from STAY to TRAVEL, clear the endLocation and stops
+    if (previousDay.type === 'STAY' && updatedDay.type === 'TRAVEL') {
+      updatedDay.endLocation = undefined;
+      updatedDay.stops = [];
+    }
+
+    // Auto-STAY logic: same start/end and no stops
+    if (updatedDay.type === 'TRAVEL' && updatedDay.startLocation && updatedDay.endLocation) {
+      const isSame = updatedDay.startLocation.lat === updatedDay.endLocation.lat && 
+                     updatedDay.startLocation.lng === updatedDay.endLocation.lng;
+      if (isSame && updatedDay.stops.length === 0) {
+        updatedDay.type = 'STAY';
+      }
+    }
+
     const newDays = [...trip.days];
     newDays[dayIndex] = updatedDay;
     setTrip({ ...trip, days: newDays });
@@ -211,12 +250,7 @@ export const ReserveVehiclePage = () => {
     }
   };
 
-  const getPreviousDayEnd = (index: number): TripLocation | undefined => {
-    if (index === 0) return undefined;
-    const prevDay = trip.days[index - 1];
-    if (prevDay.type === 'TRAVEL') return prevDay.endLocation;
-    return prevDay.startLocation;
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
@@ -581,24 +615,15 @@ export const ReserveVehiclePage = () => {
               </div>
 
               <div className="mt-10 pt-8 border-t flex flex-col items-center">
-                <button
-                  onClick={calculateRoute}
-                  disabled={isCalculating}
-                  className="flex items-center gap-2 px-10 py-4 bg-amber-500 text-white rounded-full font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:scale-105"
-                >
-                  {isCalculating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" /> Calculating...
-                    </>
-                  ) : (
-                    <>
-                      <MapIcon className="w-5 h-5" /> Preview Trip Route
-                    </>
-                  )}
-                </button>
+                {isCalculating && (
+                  <div className="flex items-center gap-2 text-amber-600 font-medium mb-4">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Updating route...
+                  </div>
+                )}
 
-                {getTripSegments().some(s => s.points.length > 0) && (
-                  <div className="w-full mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {getTripSegments().some(s => s.points.length >= 2) && (
+                  <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <TripRouteSummary segments={getTripSegments()} trip={trip} />
                   </div>
                 )}
