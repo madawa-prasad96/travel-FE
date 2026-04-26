@@ -46,16 +46,7 @@ export const Navbar = () => {
               </Link>
             ))}
 
-            {/* Plan a Tour CTA */}
-            <Link
-              to="/plan"
-              className={cn(
-                'px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-semibold shadow-lg shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 text-sm whitespace-nowrap',
-                isActive('/plan') && 'bg-amber-600'
-              )}
-            >
-              Plan a Tour
-            </Link>
+
           </div>
 
           {/* Mobile Menu Button */}
@@ -87,15 +78,7 @@ export const Navbar = () => {
               {label}
             </Link>
           ))}
-          <div className="pt-3 border-t">
-            <Link
-              to="/plan"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-center transition-colors"
-            >
-              Plan a Tour
-            </Link>
-          </div>
+
         </div>
       )}
     </nav>
