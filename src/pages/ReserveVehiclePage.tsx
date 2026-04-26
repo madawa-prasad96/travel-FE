@@ -545,13 +545,39 @@ export const ReserveVehiclePage = () => {
                 ))}
               </div>
 
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={addDay}
-                  className="flex items-center gap-2 px-6 py-3 bg-white border border-dashed border-gray-300 rounded-xl text-gray-600 font-medium hover:border-amber-500 hover:text-amber-600 transition-all shadow-sm"
-                >
-                  <Plus className="w-5 h-5" /> Add Day {trip.days.length + 1}
-                </button>
+              <div className="mt-6 flex flex-col items-center gap-3">
+                {(() => {
+                  const lastDay = trip.days[trip.days.length - 1];
+                  const isDay1 = trip.days.length === 1;
+                  const isLastDayComplete = 
+                    tripStartDate && (
+                      (lastDay.type === 'TRAVEL' && (isDay1 ? !!lastDay.startLocation : true) && !!lastDay.endLocation) ||
+                      (lastDay.type === 'STAY')
+                    );
+
+                  return (
+                    <>
+                      <button
+                        onClick={addDay}
+                        disabled={!isLastDayComplete}
+                        className={cn(
+                          "flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all shadow-sm border",
+                          isLastDayComplete 
+                            ? "bg-white border-dashed border-amber-300 text-amber-600 hover:border-amber-500 hover:bg-amber-50"
+                            : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
+                        )}
+                      >
+                        <Plus className="w-5 h-5" /> Add Day {trip.days.length + 1}
+                      </button>
+                      {!isLastDayComplete && (
+                        <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5" />
+                          Fill Day {trip.days.length} details to add next day
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="mt-10 pt-8 border-t flex flex-col items-center">

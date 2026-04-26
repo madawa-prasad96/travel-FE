@@ -132,17 +132,6 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-800">Day {day.dayNo}</h3>
-                {isFirstDay && onTripStartDateChange && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <CalendarIcon className="w-3.5 h-3.5 text-amber-500" />
-                    <input
-                      type="date"
-                      value={tripStartDate || ''}
-                      onChange={(e) => onTripStartDateChange(e.target.value)}
-                      className="text-xs font-medium border-b border-dashed border-amber-300 focus:border-amber-500 outline-none bg-transparent text-amber-700 cursor-pointer"
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -172,11 +161,23 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
           </div>
 
           <div className="flex items-center gap-4">
-            {currentDayDate && (
-              <div className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm font-bold border border-amber-100 flex items-center gap-2">
-                <CalendarIcon className="w-3.5 h-3.5" />
-                {format(currentDayDate, 'dd MMM yyyy')}
+            {isFirstDay && onTripStartDateChange ? (
+              <div className="bg-amber-50 text-amber-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-amber-200 flex items-center gap-2 shadow-sm">
+                <CalendarIcon className="w-4 h-4 text-amber-500" />
+                <input
+                  type="date"
+                  value={tripStartDate || ''}
+                  onChange={(e) => onTripStartDateChange(e.target.value)}
+                  className="outline-none bg-transparent text-amber-700 cursor-pointer font-bold"
+                />
               </div>
+            ) : (
+              currentDayDate && (
+                <div className="bg-white text-gray-700 px-4 py-1.5 rounded-xl text-sm font-bold border border-gray-200 flex items-center gap-2 shadow-sm">
+                  <CalendarIcon className="w-4 h-4 text-amber-500" />
+                  {format(currentDayDate, 'dd MMM yyyy')}
+                </div>
+              )
             )}
             {!isFirstDay && (
               <button 
