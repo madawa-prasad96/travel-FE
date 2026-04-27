@@ -33,6 +33,7 @@ interface TourSummary {
   estimatedCost: number;
   startLocationName?: string;
   endLocationName?: string;
+  totalDistance?: number;
 }
 
 export const ReserveVehiclePage = () => {
@@ -139,6 +140,7 @@ export const ReserveVehiclePage = () => {
       estimatedCost: trip.totalCost || 0,
       startLocationName: startLoc,
       endLocationName: endLoc,
+      totalDistance: trip.totalDistance,
     });
   };
 
@@ -340,6 +342,11 @@ export const ReserveVehiclePage = () => {
                   label: 'Vehicle Type',
                   value: summary.vehicleLabel,
                   icon: <Car className="w-4 h-4 text-amber-500" />,
+                },
+                {
+                  label: 'Total Distance (km)',
+                  value: summary.totalDistance ? `${summary.totalDistance.toLocaleString()} km` : 'N/A',
+                  icon: <MapPin className="w-4 h-4 text-amber-500" />,
                 },
                 {
                   label: 'Estimated Cost (USD)',
@@ -657,9 +664,9 @@ export const ReserveVehiclePage = () => {
                     onClick={handleShowLocationSummary}
                     className="mb-8 px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 group animate-in zoom-in-95 duration-300"
                   >
-                    <div className="bg-white/20 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
+                    {/* <div className="bg-white/20 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
                       <CheckCircle className="w-5 h-5" />
-                    </div>
+                    </div> */}
                     <span className="text-lg">OK</span>
                   </button>
                 )}
