@@ -1,5 +1,5 @@
 /// <reference types="google.maps" />
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Map, useMap, useMapsLibrary, AdvancedMarker } from '@vis.gl/react-google-maps';
 import type { MapMouseEvent } from '@vis.gl/react-google-maps';
 import { X, Search, Check, Loader2 } from 'lucide-react';
@@ -16,27 +16,34 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(initialLocation || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [hasSelectedPrediction, setHasSelectedPrediction] = useState(false);
   const map = useMap();
   const placesLib = useMapsLibrary('places');
   const geocodingLib = useMapsLibrary('geocoding');
   const [placesService, setPlacesService] = useState<google.maps.places.PlacesService | null>(null);
+  const [autocompleteService, setAutocompleteService] = useState<google.maps.places.AutocompleteService | null>(null);
   const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // Initialize Services
   useEffect(() => {
     if (placesLib && map) {
       setPlacesService(new placesLib.PlacesService(map));
+      setAutocompleteService(new placesLib.AutocompleteService());
     }
     if (geocodingLib) {
       setGeocoder(new geocodingLib.Geocoder());
     }
   }, [placesLib, geocodingLib, map]);
 
-  // Reset state when opening
+  // Reset state when opening and focus search input
   useEffect(() => {
     if (isOpen) {
       setSelectedLocation(initialLocation || null);
       setSearchQuery('');
+      setPredictions([]);
+      searchInputRef.current?.focus();
     }
   }, [isOpen, initialLocation]);
 
@@ -48,11 +55,9 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
 
     geocoder.geocode({ location: { lat, lng } }, (results, status) => {
       if (status === 'OK' && results && results[0]) {
-        const name = results[0].formatted_address; // Or simplified name
-        // Try to find a better name component if possible, e.g. locality or point of interest
-        
+        const name = results[0].formatted_address;
         setSelectedLocation({
-          name: name,
+          name,
           lat,
           lng
         });
@@ -60,37 +65,94 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
     });
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery || !placesService) return;
+  const fetchPredictions = (query: string) => {
+    if (!query || !autocompleteService) {
+      setPredictions([]);
+      return;
+    }
 
     setIsSearching(true);
+    // Restrict results to Sri Lanka only
     const request = {
-      query: searchQuery,
-      fields: ['name', 'geometry', 'formatted_address']
+      input: query,
+      componentRestrictions: { country: 'lk' }
     };
 
-    placesService.findPlaceFromQuery(request, (results, status) => {
+    autocompleteService.getPlacePredictions(request, (results, status) => {
       setIsSearching(false);
-      if (status === 'OK' && results && results[0] && results[0].geometry && results[0].geometry.location) {
-        const place = results[0];
-        const location = place.geometry!.location!; 
-        const newLoc = {
-            name: place.name || place.formatted_address || searchQuery,
-            lat: location.lat(),
-            lng: location.lng()
-        };
-        setSelectedLocation(newLoc);
-        
-        if (map) {
-            map.panTo(location);
-            map.setZoom(14);
-        }
+      if (status === 'OK' && results) {
+        setPredictions(results);
       } else {
-        alert('Location not found');
+        setPredictions([]);
       }
     });
   };
+
+  const selectPrediction = (prediction: google.maps.places.AutocompletePrediction) => {
+    if (!placesService || !prediction.place_id) return;
+
+    setIsSearching(true);
+    placesService.getDetails(
+      { placeId: prediction.place_id, fields: ['name', 'geometry', 'formatted_address'] },
+      (place, status) => {
+        setIsSearching(false);
+        setPredictions([]);
+
+            if (status === 'OK' && place && place.geometry?.location) {
+          const location = place.geometry.location;
+          const name = place.name || prediction.structured_formatting.main_text || prediction.description || searchQuery;
+          const newLoc = {
+            name,
+            lat: location.lat(),
+            lng: location.lng()
+          };
+          setSelectedLocation(newLoc);
+          setSearchQuery(name);
+          setPredictions([]);
+          setHasSelectedPrediction(true);
+          onSelect(newLoc);
+
+          if (map) {
+            map.panTo(location);
+            map.setZoom(14);
+          }
+        }
+      }
+    );
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (predictions.length > 0) {
+      selectPrediction(predictions[0]);
+      return;
+    }
+
+    if (searchQuery.trim().length >= 2) {
+      setHasSelectedPrediction(false);
+      fetchPredictions(searchQuery.trim());
+    }
+  };
+
+  useEffect(() => {
+    const normalized = searchQuery.trim();
+    if (!normalized || normalized.length < 2 || !autocompleteService) {
+      setPredictions([]);
+      return;
+    }
+
+    if (hasSelectedPrediction) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      fetchPredictions(normalized);
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchQuery, autocompleteService]);
 
   const handleConfirm = () => {
     if (selectedLocation) {
@@ -123,12 +185,40 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 )}
                 <input 
+                  ref={searchInputRef}
                   type="text" 
                   placeholder="Search places..." 
                   className="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={e => {
+                    setHasSelectedPrediction(false);
+                    setSearchQuery(e.target.value);
+                  }}
                 />
+
+                {predictions.length > 0 && (
+                  <div className="absolute left-0 right-0 mt-1 z-20 max-h-72 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+                    {predictions.map((prediction, index) => (
+                      <button
+                        key={`${prediction.place_id || index}-${index}`}
+                        type="button"
+                        onClick={() => selectPrediction(prediction)}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-gray-800">{prediction.structured_formatting?.main_text || prediction.description}</div>
+                        {prediction.structured_formatting?.secondary_text && (
+                          <div className="text-xs text-gray-500 mt-1">{prediction.structured_formatting.secondary_text}</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {searchQuery.trim().length >= 2 && !isSearching && predictions.length === 0 && (
+                  <div className="absolute left-0 right-0 mt-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                    No suggestions found.
+                  </div>
+                )}
              </form>
 
              {selectedLocation && (

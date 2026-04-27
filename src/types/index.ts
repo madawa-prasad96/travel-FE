@@ -4,6 +4,8 @@ export interface TripLocation {
   lng: number;
 }
 
+export type Location = TripLocation;
+
 export interface Stop extends TripLocation {
   id: string;
 }
@@ -19,6 +21,7 @@ export interface Day {
   polyline?: string; // Encoded polyline for the day's route
   distance?: number; // Estimated distance in km
   cost?: number; // Estimated cost in USD
+  date?: string; // Calculated date for this day
 }
 
 export interface Trip {
