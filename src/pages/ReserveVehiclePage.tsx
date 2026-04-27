@@ -31,6 +31,8 @@ interface TourSummary {
   vehicleLabel: string;
   vehicleKey: string;
   estimatedCost: number;
+  startLocationName?: string;
+  endLocationName?: string;
 }
 
 export const ReserveVehiclePage = () => {
@@ -110,6 +112,34 @@ export const ReserveVehiclePage = () => {
       setBooked(false);
       setSummary(null);
     }, 2500);
+  };
+
+  const handleShowLocationSummary = () => {
+    const daysCount = trip.days.length;
+    const nights = Math.max(0, daysCount - 1);
+    const vehicleLabel = VEHICLE_OPTIONS.find(o => o.value === vehicle)?.label ?? vehicle;
+
+    let tripEndDate = '';
+    if (tripStartDate) {
+      tripEndDate = format(addDays(parseISO(tripStartDate), daysCount - 1), 'yyyy-MM-dd');
+    }
+
+    const startLoc = trip.days[0].startLocation?.name || 'N/A';
+    const lastDay = trip.days[daysCount - 1];
+    const endLoc = (lastDay.type === 'TRAVEL' ? lastDay.endLocation?.name : lastDay.startLocation?.name) || 'N/A';
+
+    setSummary({
+      startDate: tripStartDate,
+      endDate: tripEndDate,
+      days: daysCount,
+      nights,
+      travellers: travellersNum,
+      vehicleLabel,
+      vehicleKey: vehicle,
+      estimatedCost: trip.totalCost || 0,
+      startLocationName: startLoc,
+      endLocationName: endLoc,
+    });
   };
 
   const getPreviousDayEnd = (index: number): TripLocation | undefined => {
@@ -282,13 +312,13 @@ export const ReserveVehiclePage = () => {
             <div className="px-8 py-6 space-y-0 divide-y divide-gray-100">
               {[
                 {
-                  label: 'Starting Date',
-                  value: format(new Date(summary.startDate), 'dd MMM yyyy'),
+                  label: summary.startLocationName ? 'Starting Date & Location' : 'Starting Date',
+                  value: `${format(new Date(summary.startDate), 'dd MMM yyyy')}${summary.startLocationName ? ` - ${summary.startLocationName}` : ''}`,
                   icon: <Calendar className="w-4 h-4 text-amber-500" />,
                 },
                 {
-                  label: 'Ending Date',
-                  value: format(new Date(summary.endDate), 'dd MMM yyyy'),
+                  label: summary.endLocationName ? 'Ending Date & Location' : 'Ending Date',
+                  value: `${format(new Date(summary.endDate), 'dd MMM yyyy')}${summary.endLocationName ? ` - ${summary.endLocationName}` : ''}`,
                   icon: <Calendar className="w-4 h-4 text-amber-500" />,
                 },
                 {
@@ -620,23 +650,39 @@ export const ReserveVehiclePage = () => {
                 })()}
               </div>
 
-              <div className="mt-10 pt-8 border-t flex flex-col items-center">
-                {isCalculating && (
-                  <div className="flex items-center gap-2 text-amber-600 font-medium mb-4">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Updating route...
-                  </div>
+              <div className="mt-10 flex flex-col items-center">
+                {trip.totalCost !== undefined && trip.totalCost > 0 && !isCalculating && (
+                  <button
+                    type="button"
+                    onClick={handleShowLocationSummary}
+                    className="mb-8 px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 group animate-in zoom-in-95 duration-300"
+                  >
+                    <div className="bg-white/20 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
+                      <CheckCircle className="w-5 h-5" />
+                    </div>
+                    <span className="text-lg">OK</span>
+                  </button>
                 )}
 
-                {getTripSegments().some(s => s.points.length >= 2) && (
-                  <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <TripRouteSummary segments={getTripSegments()} trip={trip} />
-                  </div>
-                )}
+                <div className="w-full pt-8 border-t flex flex-col items-center">
+                  {isCalculating && (
+                    <div className="flex items-center gap-2 text-amber-600 font-medium mb-4">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Updating route...
+                    </div>
+                  )}
+
+                  {getTripSegments().some(s => s.points.length >= 2) && (
+                    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      <TripRouteSummary segments={getTripSegments()} trip={trip} />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         )}
+
 
         {/* Info Cards */}
         {!showPlanner && (
