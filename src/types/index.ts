@@ -4,6 +4,8 @@ export interface TripLocation {
   lng: number;
 }
 
+export type Location = TripLocation;
+
 export interface Stop extends TripLocation {
   id: string;
 }
