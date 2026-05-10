@@ -25,7 +25,7 @@ export const ContactPage = () => {
             <h3 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h3>
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                <div className="p-3 bg-amber-100 text-amber-600 rounded-lg">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
@@ -34,7 +34,7 @@ export const ContactPage = () => {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                <div className="p-3 bg-amber-100 text-amber-600 rounded-lg">
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
@@ -43,7 +43,7 @@ export const ContactPage = () => {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                <div className="p-3 bg-amber-100 text-amber-600 rounded-lg">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
@@ -58,7 +58,7 @@ export const ContactPage = () => {
           <div className="bg-white rounded-2xl shadow-sm p-8">
             {submitted ? (
                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
                     <Send className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Message Sent!</h3>
@@ -71,7 +71,7 @@ export const ContactPage = () => {
                     <input 
                     type="text" 
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
                     placeholder="Your name"
                     />
                 </div>
@@ -80,7 +80,7 @@ export const ContactPage = () => {
                     <input 
                     type="email" 
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
                     placeholder="you@example.com"
                     />
                 </div>
@@ -89,13 +89,13 @@ export const ContactPage = () => {
                     <textarea 
                     required
                     rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
                     placeholder="How can we help?"
                     />
                 </div>
                 <button 
                     type="submit"
-                    className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
                 >
                     <Send className="w-4 h-4" /> Send Message
                 </button>

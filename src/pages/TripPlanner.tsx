@@ -162,7 +162,7 @@ export const TripPlanner = () => {
       <div className="mt-6 flex justify-center">
         <button
           onClick={addDay}
-          className="flex items-center gap-2 px-6 py-3 bg-white border border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
+          className="flex items-center gap-2 px-6 py-3 bg-white border border-dashed border-gray-300 rounded-lg text-gray-600 font-medium hover:border-amber-500 hover:text-amber-600 transition-all shadow-sm"
         >
           <Plus className="w-5 h-5" /> Add Day {trip.days.length + 1}
         </button>
@@ -172,7 +172,7 @@ export const TripPlanner = () => {
           <button
             onClick={calculateRoute}
             disabled={isCalculating}
-            className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:scale-105"
+            className="flex items-center gap-2 px-8 py-4 bg-amber-600 text-white rounded-full font-bold shadow-lg hover:bg-amber-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:scale-105"
           >
             {isCalculating ? (
               <>

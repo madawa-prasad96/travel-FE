@@ -180,7 +180,7 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
           <div className="w-full md:w-80 bg-white z-10 p-4 border-r flex-shrink-0 flex flex-col gap-4">
              <form onSubmit={handleSearchSubmit} className="relative">
                 {isSearching ? (
-                   <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
+                   <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 animate-spin" />
                 ) : (
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 )}
@@ -188,7 +188,7 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
                   ref={searchInputRef}
                   type="text" 
                   placeholder="Search places..." 
-                  className="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
                   value={searchQuery}
                   onChange={e => {
                     setHasSelectedPrediction(false);
@@ -222,14 +222,14 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
              </form>
 
              {selectedLocation && (
-               <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
-                  <div className="text-xs text-blue-500 font-semibold mb-1 uppercase">Selected</div>
+               <div className="bg-amber-50 border border-amber-100 p-3 rounded-lg animate-in fade-in slide-in-from-top-2">
+                  <div className="text-xs text-amber-500 font-semibold mb-1 uppercase">Selected</div>
                   <div className="font-medium text-gray-800">{selectedLocation.name}</div>
                   <div className="text-xs text-gray-500 mt-1">{selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}</div>
                   
                   <button 
                     onClick={handleConfirm}
-                    className="mt-3 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    className="mt-3 w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                   >
                     <Check className="w-4 h-4" />
                     Confirm Selection

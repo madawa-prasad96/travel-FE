@@ -135,7 +135,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
               <div className="flex items-center gap-2 md:gap-3">
                 <div className={cn(
                     "p-1.5 md:p-2 rounded-lg shrink-0",
-                    day.type === 'TRAVEL' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+                    day.type === 'TRAVEL' ? 'bg-amber-100 text-amber-600' : 'bg-amber-100 text-amber-600'
                 )}>
                   {day.type === 'TRAVEL' ? <Navigation className="w-4 h-4 md:w-5 md:h-5" /> : <Coffee className="w-4 h-4 md:w-5 md:h-5" />}
                 </div>
@@ -169,7 +169,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                 onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
                 className={cn(
                   "px-3 py-1 text-xs font-bold rounded-md transition-all",
-                  day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
+                  day.type === 'TRAVEL' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700"
                 )}
               >
                 Travel
@@ -198,7 +198,7 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
                   onClick={() => onUpdate({ ...day, type: 'TRAVEL' })}
                   className={cn(
                     "px-2 py-0.5 text-xs font-medium rounded-md transition-colors",
-                    day.type === 'TRAVEL' ? "bg-blue-50 text-blue-700" : "text-gray-500 hover:text-gray-700"
+                    day.type === 'TRAVEL' ? "bg-amber-50 text-amber-700" : "text-gray-500 hover:text-gray-700"
                   )}
                 >
                   Travel
@@ -281,16 +281,16 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
       {!isDateMissing && (
         <div className="md:p-6 p-4">
           {day.type === 'STAY' ? (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 md:p-4 flex flex-col items-center justify-center text-center">
-              <div className="bg-blue-100 p-2 md:p-2.5 rounded-full mb-2">
-                <Coffee className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+            <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 md:p-4 flex flex-col items-center justify-center text-center">
+              <div className="bg-amber-100 p-2 md:p-2.5 rounded-full mb-2">
+                <Coffee className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
               </div>
-              <p className="font-bold text-blue-900 text-sm md:text-base truncate max-w-full">
+              <p className="font-bold text-amber-900 text-sm md:text-base truncate max-w-full">
                 Stay Day at <span className="hidden md:inline">{displayStartLocation?.name || "Previous Location"}</span>
                 <span className="inline md:hidden">{truncateText(displayStartLocation?.name || "Previous Location")}</span>
               </p>
-              <p className="text-[10px] md:text-sm text-blue-600">Relax and enjoy your stay.</p>
-              <div className="mt-2 text-[9px] md:text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-3 py-1 rounded-full border border-blue-100">
+              <p className="text-[10px] md:text-sm text-amber-600">Relax and enjoy your stay.</p>
+              <div className="mt-2 text-[9px] md:text-xs text-gray-500 uppercase tracking-wide font-bold bg-white/50 px-3 py-1 rounded-full border border-amber-100">
                 Daily Charge Applies
               </div>
             </div>
@@ -299,8 +299,8 @@ export const TripDayEditor = ({ day, onUpdate, onRemove, isFirstDay, previousDay
               {/* Start Location */}
               <div className="flex items-start gap-3 md:gap-4">
                 <div className="flex flex-col items-center h-full pt-1.5">
-                  <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-green-500 ring-2 md:ring-4 ring-green-100 shrink-0" />
-                  <div className="w-0.5 h-full bg-gradient-to-b from-green-500 to-gray-200 min-h-[15px] md:min-h-[25px] mt-1" />
+                  <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-amber-500 ring-2 md:ring-4 ring-amber-100 shrink-0" />
+                  <div className="w-0.5 h-full bg-gradient-to-b from-amber-500 to-gray-200 min-h-[15px] md:min-h-[25px] mt-1" />
                 </div>
                 <div className="flex-1">
                   <label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Start Location</label>

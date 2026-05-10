@@ -108,12 +108,12 @@ export const LandingPage = () => {
           
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard 
-              icon={<Map className="w-8 h-8 text-blue-500" />}
+              icon={<Map className="w-8 h-8 text-amber-500" />}
               title="Interactive Route Planning"
               description="Visualize your entire trip on Google Maps. Add, reorder, and manage stops effortlessly."
             />
             <FeatureCard 
-              icon={<Clock className="w-8 h-8 text-green-500" />}
+              icon={<Clock className="w-8 h-8 text-amber-500" />}
               title="Smart Daily Itineraries"
               description="Organize your trip day-by-day. Distinguish between travel days and relaxed stay days."
             />
