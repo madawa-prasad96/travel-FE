@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { GoogleMapsProvider } from './context/GoogleMapsContext';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
@@ -9,10 +10,21 @@ import { ReserveVehiclePage } from './pages/ReserveVehiclePage';
 import { GalleryPage } from './pages/GalleryPage';
 import { Footer } from './components/Footer';
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <GoogleMapsProvider>
       <Router>
+        <ScrollToTop />
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
            <Navbar />
            <div className="flex-1">

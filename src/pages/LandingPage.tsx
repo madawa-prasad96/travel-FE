@@ -90,7 +90,7 @@ export const LandingPage = () => {
             The smartest way to organize your multi-stop trips. Visualize routes, manage stops, and travel with confidence.
           </p>
           <Link 
-            to="/plan"
+            to="/reserve"
             className="inline-flex items-center gap-3 bg-amber-500 hover:bg-amber-600 text-white text-lg font-bold px-8 py-4 rounded-full shadow-xl shadow-amber-500/20 transition-all hover:scale-105"
           >
             Start Planning Now <ArrowRight className="w-5 h-5" />
@@ -218,23 +218,14 @@ export const LandingPage = () => {
          <div className="max-w-4xl mx-auto px-4">
            <h2 className="text-4xl font-bold mb-6">Ready to start your adventure?</h2>
            <p className="text-gray-400 mb-8 text-lg">Join thousands of travelers planning their dream trips with BeeTravel today.</p>
-           <button className="bg-white text-gray-900 font-bold px-8 py-4 rounded-full text-lg hover:bg-gray-100 transition-colors">
-             Create Free Account
-           </button>
+           <Link 
+             to="/reserve"
+             className="inline-block bg-white text-gray-900 font-bold px-8 py-4 rounded-full text-lg hover:bg-gray-100 transition-colors"
+           >
+             Get Started Now
+           </Link>
          </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-950 text-gray-500 py-10 border-t border-gray-900">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-           <p>&copy; 2024 BeeTravel Inc. All rights reserved.</p>
-           <div className="flex gap-6 text-sm font-medium">
-             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-             <a href="#" className="hover:text-white transition-colors">Contact</a>
-           </div>
-        </div>
-      </footer>
     </div>
   );
 };
