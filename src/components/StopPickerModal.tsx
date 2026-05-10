@@ -110,7 +110,6 @@ export const StopPickerModal: React.FC<StopPickerModalProps> = ({ isOpen, onClos
           setSearchQuery(name);
           setPredictions([]);
           setHasSelectedPrediction(true);
-          onSelect(newLoc);
 
           if (map) {
             map.panTo(location);
