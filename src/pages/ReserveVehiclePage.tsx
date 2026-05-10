@@ -992,8 +992,9 @@ export const ReserveVehiclePage = () => {
                 {(() => {
                   const lastDay = trip.days[trip.days.length - 1];
                   const isDay1 = trip.days.length === 1;
+                  const hasStartLocation = trip.days[0].startLocation !== undefined;
                   const isLastDayComplete =
-                    tripStartDate && (
+                    tripStartDate && hasStartLocation && (
                       (lastDay.type === 'TRAVEL' && (isDay1 ? !!lastDay.startLocation : true) && !!lastDay.endLocation) ||
                       (lastDay.type === 'STAY')
                     );
@@ -1015,7 +1016,10 @@ export const ReserveVehiclePage = () => {
                       {!isLastDayComplete && (
                         <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
                           <Info className="w-3.5 h-3.5" />
-                          Fill Day {trip.days.length} details to add next day
+                          {!hasStartLocation
+                            ? "Set start location for Day 1 to continue planning"
+                            : `Fill Day ${trip.days.length} details to add next day`
+                          }
                         </p>
                       )}
                     </>
@@ -1024,18 +1028,30 @@ export const ReserveVehiclePage = () => {
               </div>
 
               <div className="mt-10 flex flex-col items-center">
-                {trip.totalCost !== undefined && trip.totalCost > 0 && !isCalculating && (
-                  <button
-                    type="button"
-                    onClick={handleShowLocationSummary}
-                    className="mb-8 px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 group animate-in zoom-in-95 duration-300"
-                  >
-                    {/* <div className="bg-white/20 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
-                      <CheckCircle className="w-5 h-5" />
-                    </div> */}
-                    <span className="text-lg">OK</span>
-                  </button>
-                )}
+                {(() => {
+                  const hasStartLocation = trip.days[0].startLocation !== undefined;
+                  const canProceed = trip.totalCost !== undefined && trip.totalCost > 0 && !isCalculating && hasStartLocation;
+
+                  return (
+                    <>
+                      {canProceed && (
+                        <button
+                          type="button"
+                          onClick={handleShowLocationSummary}
+                          className="mb-8 px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-amber-200 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 group animate-in zoom-in-95 duration-300"
+                        >
+                          <span className="text-lg">OK</span>
+                        </button>
+                      )}
+                      {!hasStartLocation && trip.totalCost !== undefined && trip.totalCost > 0 && !isCalculating && (
+                        <p className="text-xs text-amber-600 font-medium flex items-center gap-1 mb-8">
+                          <Info className="w-3.5 h-3.5" />
+                          Set start location for Day 1 to proceed with booking
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
 
                 <div className="w-full pt-8 border-t flex flex-col items-center">
                   {isCalculating && (
