@@ -14,12 +14,14 @@ const VEHICLE_OPTIONS = [
   { value: '', label: 'Select a Vehicle' },
   { value: 'sedan', label: 'Sedan Car' },
   { value: 'van', label: 'Van' },
+  { value: 'minibus', label: 'Minibus' },
 ];
 
 // Estimated daily rates (USD)
 const DAILY_RATE: Record<string, number> = {
   sedan: 60,
   van: 95,
+  minibus: 120,
 };
 
 interface TourSummary {
@@ -42,10 +44,22 @@ export const ReserveVehiclePage = () => {
   const [vehicle, setVehicle] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [startLocation, setStartLocation] = useState('');
-  const [endLocation, setEndLocation] = useState('');
   const [summary, setSummary] = useState<TourSummary | null>(null);
   const [booked, setBooked] = useState(false);
+  const [bookingStep, setBookingStep] = useState(1);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('');
+  const [email, setEmail] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState<{ firstName?: string; lastName?: string; country?: string; fullName?: string; email?: string; whatsapp?: string; message?: string }>({});
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const lastNameRef = useRef<HTMLInputElement>(null);
+  const countryRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const whatsappRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
   const today = format(new Date(), 'yyyy-MM-dd');
 
   // Location basis states
@@ -107,12 +121,119 @@ export const ReserveVehiclePage = () => {
     }
   };
 
+  const validateEmail = (emailStr: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailStr);
+  };
+
   const handleBookNow = () => {
+    if (bookingStep === 1) {
+      setBookingStep(2);
+      return;
+    }
+
+    // Step 2 validation
+    const newErrors: { firstName?: string; lastName?: string; country?: string; email?: string; whatsapp?: string; message?: string } = {};
+    let firstErrorField: string | null = null;
+
+    // Validate First Name
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      if (!firstErrorField) firstErrorField = 'firstName';
+    }
+
+    // Validate Last Name
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+      if (!firstErrorField) firstErrorField = 'lastName';
+    }
+
+    // Validate Country
+    if (!country.trim()) {
+      newErrors.country = 'Country is required';
+      if (!firstErrorField) firstErrorField = 'country';
+    }
+
+    // Validate Email
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+      if (!firstErrorField) firstErrorField = 'email';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email format';
+      if (!firstErrorField) firstErrorField = 'email';
+    }
+
+    // Validate WhatsApp
+    if (!whatsapp.trim()) {
+      newErrors.whatsapp = 'WhatsApp number is required';
+      if (!firstErrorField) firstErrorField = 'whatsapp';
+    }
+
+    // Validate Message
+    if (!message.trim()) {
+      newErrors.message = 'Message is required';
+      if (!firstErrorField) firstErrorField = 'message';
+    }
+
+    // If there are errors, set them and scroll to first error field
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setTimeout(() => {
+        let targetRef: HTMLInputElement | HTMLTextAreaElement | null = null;
+        if (firstErrorField === 'firstName') targetRef = firstNameRef.current;
+        else if (firstErrorField === 'lastName') targetRef = lastNameRef.current;
+        else if (firstErrorField === 'country') targetRef = countryRef.current;
+        else if (firstErrorField === 'email') targetRef = emailRef.current;
+        else if (firstErrorField === 'whatsapp') targetRef = whatsappRef.current;
+        else if (firstErrorField === 'message') targetRef = messageRef.current;
+
+        if (targetRef) {
+          targetRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRef.focus();
+        }
+      }, 100);
+      return;
+    }
+
+    // Clear errors if validation passes
+    setErrors({});
+
     setBooked(true);
     setTimeout(() => {
       setBooked(false);
       setSummary(null);
-    }, 2500);
+      setBookingStep(1);
+      setFirstName('');
+      setLastName('');
+      setCountry('');
+      setEmail('');
+      setWhatsapp('');
+      setMessage('');
+    }, 1000);
+  };
+
+  const handleReset = () => {
+    setFirstName('');
+    setLastName('');
+    setCountry('');
+    setEmail('');
+    setWhatsapp('');
+    setMessage('');
+    setErrors({});
+  };
+
+  const getVehicleImage = (vehicleKey: string) => {
+    switch (vehicleKey) {
+      case 'sedan':
+        return '/sedan.jpg';
+      case 'van':
+        return '/van.png';
+      case 'minibus':
+        return '/minibus.png';
+      default:
+        // Use a data URL placeholder to avoid infinite requests
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjEwMCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VmVoaWNsZSBJbWFnZTwvdGV4dD48L3N2Zz4=';
+    }
   };
 
   const handleShowLocationSummary = () => {
@@ -295,23 +416,40 @@ export const ReserveVehiclePage = () => {
       {/* ── Tour Summary Modal ── */}
       {summary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
 
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-6 text-center relative">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-6 text-center relative shrink-0">
               <button
-                onClick={() => setSummary(null)}
+                onClick={() => {
+                  setSummary(null);
+                  setBookingStep(1);
+                  setFirstName('');
+                  setLastName('');
+                  setCountry('');
+                  setEmail('');
+                  setWhatsapp('');
+                  setMessage('');
+                  setErrors({});
+                  setBooked(false);
+                }}
                 className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
-              <h2 className="text-2xl font-bold text-white tracking-wide">Tour Summary</h2>
-              <p className="text-amber-100 text-sm mt-1">Review your booking details</p>
+              <h2 className="text-2xl font-bold text-white tracking-wide">
+                {bookingStep === 1 ? 'Tour Summary' : 'Book a Vehicle'}
+              </h2>
+              <p className="text-amber-100 text-sm mt-1">
+                {bookingStep === 1 ? 'Review your booking details' : 'Complete your booking information'}
+              </p>
             </div>
 
-            {/* Summary Rows */}
-            <div className="px-8 py-6 space-y-0 divide-y divide-gray-100">
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto">
+              {bookingStep === 1 ? (
+              <div className="px-8 py-6 space-y-0 divide-y divide-gray-100">
               {[
                 {
                   label: summary.startLocationName ? 'Starting Date & Location' : 'Starting Date',
@@ -376,40 +514,268 @@ export const ReserveVehiclePage = () => {
                   </span>
                 </div>
               ))}
+              </div>
+            ) : (
+                /* Step 2: Two Column Layout */
+                <div className="flex flex-col lg:flex-row min-h-0">
+                  {/* Left Side: Summary + Vehicle Image */}
+                  <div className="lg:w-1/2 p-6 border-r border-gray-100">
+                    {/* Summary */}
+                    <div className="space-y-3 mb-6">
+                      <h3 className="text-lg font-bold text-gray-800 mb-4">Booking Summary</h3>
+                      {[
+                        {
+                          label: 'Starting Date',
+                          value: format(new Date(summary.startDate), 'dd MMM yyyy'),
+                        },
+                        {
+                          label: 'Ending Date',
+                          value: format(new Date(summary.endDate), 'dd MMM yyyy'),
+                        },
+                        {
+                          label: 'Duration',
+                          value: `${summary.days} day${summary.days !== 1 ? 's' : ''}`,
+                        },
+                        {
+                          label: 'Travellers',
+                          value: summary.travellers,
+                        },
+                        {
+                          label: 'Vehicle',
+                          value: summary.vehicleLabel,
+                        },
+                        {
+                          label: 'Total Cost',
+                          value: `$${summary.estimatedCost.toLocaleString()}`,
+                        },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex justify-between items-center py-2 border-b border-gray-100">
+                          <span className="text-gray-600 text-sm">{label}</span>
+                          <span className="font-semibold text-gray-800 text-sm">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Vehicle Image */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Selected Vehicle</h4>
+                      <div className="aspect-video bg-white rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={getVehicleImage(summary.vehicleKey)}
+                          alt={summary.vehicleLabel}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/car-placeholder.jpg';
+                          }}
+                        />
+                      </div>
+                      <p className="text-center text-sm text-gray-600 mt-2">{summary.vehicleLabel}</p>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Form Fields */}
+                  <div className="lg:w-1/2 p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">Contact Information</h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase">First Name *</label>
+                          <input
+                            ref={firstNameRef}
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => {
+                              setFirstName(e.target.value);
+                              if (errors.firstName) setErrors({ ...errors, firstName: undefined });
+                            }}
+                            placeholder="Enter first name"
+                            className={cn(
+                              "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm transition-colors",
+                              errors.firstName
+                                ? "border-red-500 focus:ring-red-500 bg-red-50"
+                                : "border-gray-300 focus:ring-amber-500"
+                            )}
+                          />
+                          {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase">Last Name *</label>
+                          <input
+                            ref={lastNameRef}
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => {
+                              setLastName(e.target.value);
+                              if (errors.lastName) setErrors({ ...errors, lastName: undefined });
+                            }}
+                            placeholder="Enter last name"
+                            className={cn(
+                              "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm transition-colors",
+                              errors.lastName
+                                ? "border-red-500 focus:ring-red-500 bg-red-50"
+                                : "border-gray-300 focus:ring-amber-500"
+                            )}
+                          />
+                          {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Country *</label>
+                        <input
+                          ref={countryRef}
+                          type="text"
+                          value={country}
+                          onChange={(e) => {
+                            setCountry(e.target.value);
+                            if (errors.country) setErrors({ ...errors, country: undefined });
+                          }}
+                          placeholder="Enter your country"
+                          className={cn(
+                            "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm transition-colors",
+                            errors.country
+                              ? "border-red-500 focus:ring-red-500 bg-red-50"
+                              : "border-gray-300 focus:ring-amber-500"
+                          )}
+                        />
+                        {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Email *</label>
+                        <input
+                          ref={emailRef}
+                          type="email"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (errors.email) setErrors({ ...errors, email: undefined });
+                          }}
+                          placeholder="Enter your email"
+                          className={cn(
+                            "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm transition-colors",
+                            errors.email
+                              ? "border-red-500 focus:ring-red-500 bg-red-50"
+                              : "border-gray-300 focus:ring-amber-500"
+                          )}
+                        />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 uppercase">WhatsApp Number *</label>
+                        <input
+                          ref={whatsappRef}
+                          type="tel"
+                          value={whatsapp}
+                          onChange={(e) => {
+                            setWhatsapp(e.target.value);
+                            if (errors.whatsapp) setErrors({ ...errors, whatsapp: undefined });
+                          }}
+                          placeholder="Enter your WhatsApp number"
+                          className={cn(
+                            "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm transition-colors",
+                            errors.whatsapp
+                              ? "border-red-500 focus:ring-red-500 bg-red-50"
+                              : "border-gray-300 focus:ring-amber-500"
+                          )}
+                        />
+                        {errors.whatsapp && <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>}
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Message *</label>
+                        <textarea
+                          ref={messageRef}
+                          value={message}
+                          onChange={(e) => {
+                            setMessage(e.target.value);
+                            if (errors.message) setErrors({ ...errors, message: undefined });
+                          }}
+                          placeholder="Enter your message"
+                          className={cn(
+                            "w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:border-amber-500 outline-none text-sm resize-none h-24 transition-colors",
+                            errors.message
+                              ? "border-red-500 focus:ring-red-500 bg-red-50"
+                              : "border-gray-300 focus:ring-amber-500"
+                          )}
+                        />
+                        {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Rate note - only show in step 1 */}
+              {bookingStep === 1 && (
+                <p className="text-center text-xs text-gray-400 -mt-2 mb-4 px-8 pt-2">
+                  Rate: ${DAILY_RATE[summary.vehicleKey] ?? 60}/day · {summary.days} day{summary.days !== 1 ? 's' : ''}
+                </p>
+              )}
             </div>
 
-            {/* Rate note */}
-            <p className="text-center text-xs text-gray-400 -mt-2 mb-1 px-8">
-              Rate: ${DAILY_RATE[summary.vehicleKey] ?? 60}/day · {summary.days} day{summary.days !== 1 ? 's' : ''}
-            </p>
+            {/* Action Buttons */}
+            <div className="px-8 pb-8 pt-4 shrink-0 border-t border-gray-100">
+              {bookingStep === 1 ? (
+                <button
+                  onClick={handleBookNow}
+                  className="w-full py-3.5 rounded-2xl font-bold text-white text-base transition-all bg-amber-500 hover:bg-amber-600 hover:scale-[1.02] shadow-lg shadow-amber-300"
+                >
+                  Next
+                </button>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleReset}
+                    className="flex-1 py-3.5 rounded-2xl font-bold text-gray-700 text-base transition-all border border-gray-300 hover:bg-gray-50"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    id="bookNowBtn"
+                    onClick={handleBookNow}
+                    disabled={booked}
+                    className={cn(
+                      'flex-1 py-3.5 rounded-2xl font-bold text-white text-base transition-all shadow-lg active:scale-95',
+                      booked
+                        ? 'bg-green-400 cursor-default'
+                        : 'bg-green-500 hover:bg-green-600 hover:scale-[1.02] shadow-green-300'
+                    )}
+                  >
+                    {booked ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <CheckCircle className="w-5 h-5" />
+                        Booking Confirmed!
+                      </span>
+                    ) : (
+                      'Submit'
+                    )}
+                  </button>
+                </div>
+              )}
 
-            {/* Book Now Button */}
-            <div className="px-8 pb-8 pt-4">
               <button
-                id="bookNowBtn"
-                onClick={handleBookNow}
-                disabled={booked}
-                className={cn(
-                  'w-full py-3.5 rounded-2xl font-bold text-white text-base transition-all shadow-lg active:scale-95',
-                  booked
-                    ? 'bg-green-400 cursor-default'
-                    : 'bg-green-500 hover:bg-green-600 hover:scale-[1.02] shadow-green-300'
-                )}
-              >
-                {booked ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Booking Confirmed!
-                  </span>
-                ) : (
-                  'Book Now'
-                )}
-              </button>
-              <button
-                onClick={() => setSummary(null)}
+                onClick={() => {
+                  if (bookingStep === 2) {
+                    setBookingStep(1);
+                  } else {
+                    setSummary(null);
+                    setBookingStep(1);
+                    setFirstName('');
+                    setLastName('');
+                    setCountry('');
+                    setEmail('');
+                    setWhatsapp('');
+                    setMessage('');
+                    setErrors({});
+                    setBooked(false);
+                  }
+                }}
                 className="w-full mt-3 py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors font-medium"
               >
-                ← Go Back &amp; Edit
+                ← {bookingStep === 2 ? 'Back' : 'Go Back & Edit'}
               </button>
             </div>
           </div>
