@@ -47,8 +47,8 @@ export const ContactPage = () => {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Office</p>
-                  <p className="text-gray-600">123 Adventure Lane<br />San Francisco, CA 94105</p>
+                  <p className="font-medium text-gray-900">Location</p>
+                  <p className="text-gray-600">Online support available</p>
                 </div>
               </div>
             </div>

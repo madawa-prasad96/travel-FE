@@ -59,10 +59,6 @@ export const Footer = () => {
           <div>
             <h3 className="text-white font-bold text-lg mb-6">Contact Us</h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-amber-400 shrink-0" />
-                <span className="text-sm text-gray-400">123 Travel Street, Adventure City, World 45678</span>
-              </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-amber-400 shrink-0" />
                 <span className="text-sm text-gray-400">+1 (234) 567-890</span>
